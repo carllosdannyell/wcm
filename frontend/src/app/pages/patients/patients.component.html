@@ -1,0 +1,22 @@
+<div class="patients-container">
+    <h2>Lista de Pacientes</h2>
+  
+    <div *ngFor="let patient of patients" class="patient-card">
+      <div class="patient-header" (click)="toggleAccordion(patient)">
+        <strong>{{ patient.name }}</strong>
+        <span class="arrow">{{ patient.expanded ? '▲' : '▼' }}</span>
+      </div>
+  
+      <div *ngIf="patient.expanded" class="patient-details">
+        <p><strong>Email:</strong> {{ patient.email }}</p>
+        <p><strong>Telefone:</strong> {{ patient.phone }}</p>
+  
+        <div class="actions">
+          <button (click)="viewPatient(patient)">👁️ Visualizar</button>
+          <button (click)="editPatient(patient)">✏️ Editar</button>
+          <button class="delete" (click)="confirmDelete(patient)">🗑️ Excluir</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  

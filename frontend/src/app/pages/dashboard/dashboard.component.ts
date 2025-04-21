@@ -11,6 +11,7 @@ import { CommonModule } from '@angular/common';
 })
 export class DashboardComponent {
   token: string | null = null;
+  menuOpen: boolean = false;
 
   constructor(private router: Router) {}
 
@@ -25,5 +26,9 @@ export class DashboardComponent {
   logout(): void {
     localStorage.removeItem('access_token');
     this.router.navigate(['/']);
+  }
+
+  toggleMenu(): void {
+    this.menuOpen = !this.menuOpen;
   }
 }

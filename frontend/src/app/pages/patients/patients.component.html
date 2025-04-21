@@ -1,22 +1,91 @@
 <div class="patients-container">
-    <h2>Lista de Pacientes</h2>
-  
-    <div *ngFor="let patient of patients" class="patient-card">
-      <div class="patient-header" (click)="toggleAccordion(patient)">
-        <strong>{{ patient.name }}</strong>
-        <span class="arrow">{{ patient.expanded ? '▲' : '▼' }}</span>
-      </div>
-  
-      <div *ngIf="patient.expanded" class="patient-details">
-        <p><strong>Email:</strong> {{ patient.email }}</p>
-        <p><strong>Telefone:</strong> {{ patient.phone }}</p>
-  
-        <div class="actions">
-          <button (click)="viewPatient(patient)">👁️ Visualizar</button>
-          <button (click)="editPatient(patient)">✏️ Editar</button>
-          <button class="delete" (click)="confirmDelete(patient)">🗑️ Excluir</button>
-        </div>
+  <h2>Lista de Pacientes</h2>
+  <button class="add-button" (click)="openCreateForm()">
+    ➕ Novo Paciente
+  </button>
+
+  <div *ngIf="showForm" class="form-container">
+    <h3>{{ selectedPatient ? "Editar Paciente" : "Novo Paciente" }}</h3>
+
+    <div class="form-group">
+      <label for="name">Nome:</label>
+      <input
+        id="name"
+        [(ngModel)]="formPatient.name"
+        (focus)="onFocus('name')"
+        (blur)="onBlur('name')"
+        [disabled]="isFieldLocked('name')"
+      />
+      <small *ngIf="isFieldLocked('name')"
+        >Editando: {{ getLocker("name") }}</small
+      >
+    </div>
+
+    <div class="form-group">
+      <label for="email">Email:</label>
+      <input
+        id="email"
+        [(ngModel)]="formPatient.email"
+        (focus)="onFocus('email')"
+        (blur)="onBlur('email')"
+        [disabled]="isFieldLocked('email')"
+      />
+      <small *ngIf="isFieldLocked('email')"
+        >Editando: {{ getLocker("email") }}</small
+      >
+    </div>
+
+    <div class="form-group">
+      <label for="phone">Telefone:</label>
+      <input
+        id="phone"
+        [(ngModel)]="formPatient.phone"
+        (focus)="onFocus('phone')"
+        (blur)="onBlur('phone')"
+        [disabled]="isFieldLocked('phone')"
+      />
+      <small *ngIf="isFieldLocked('phone')"
+        >Editando: {{ getLocker("phone") }}</small
+      >
+    </div>
+
+    <div class="form-group">
+      <label for="address">Endereço:</label>
+      <input
+        id="address"
+        [(ngModel)]="formPatient.address"
+        (focus)="onFocus('address')"
+        (blur)="onBlur('address')"
+        [disabled]="isFieldLocked('address')"
+      />
+      <small *ngIf="isFieldLocked('address')"
+        >Editando: {{ getLocker("address") }}</small
+      >
+    </div>
+
+    <div class="form-actions">
+      <button (click)="savePatient()">Salvar</button>
+      <button (click)="cancelForm()">Cancelar</button>
+    </div>
+  </div>
+
+  <div *ngFor="let patient of patients" class="patient-card">
+    <div class="patient-header" (click)="toggleAccordion(patient)">
+      <strong>{{ patient.name }}</strong>
+      <span class="arrow">{{ patient.expanded ? "▲" : "▼" }}</span>
+    </div>
+
+    <div *ngIf="patient.expanded" class="patient-details">
+      <p><strong>Email:</strong> {{ patient.email }}</p>
+      <p><strong>Telefone:</strong> {{ patient.phone }}</p>
+      <p><strong>Endereço:</strong> {{ patient.address }}</p>
+      <div class="actions">
+        <button (click)="viewPatient(patient)">👁️ Visualizar</button>
+        <button (click)="openEditForm(patient)">✏️ Editar</button>
+        <button class="delete" (click)="confirmDelete(patient)">
+          🗑️ Excluir
+        </button>
       </div>
     </div>
   </div>
-  
+</div>

@@ -1,21 +1,23 @@
-import { RouterModule, Routes } from '@angular/router';
+import { Routes } from '@angular/router';
 import { LoginComponent } from './pages/login/login.component';
-import { DashboardComponent } from './pages/dashboard/dashboard.component';
+import { LayoutComponent } from './layout/layout.component';
+import { AuthGuard } from './guards/auth.guard';
 import { PanelComponent } from './pages/panel/panel.component';
 import { ProfileComponent } from './pages/profile/profile.component';
 import { PatientsComponent } from './pages/patients/patients.component';
-import { AuthGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
-  { path: '', redirectTo: 'login', pathMatch: 'full' },
   { path: 'login', component: LoginComponent },
-  { path: 'panel', component: PanelComponent },
-  { path: 'profile', component: ProfileComponent },
-  { path: 'patients', component: PatientsComponent },
   {
     path: 'dashboard',
-    component: DashboardComponent,
+    component: LayoutComponent,
     canActivate: [AuthGuard],
+    children: [
+      { path: 'panel', component: PanelComponent },
+      { path: 'profile', component: ProfileComponent },
+      { path: 'patients', component: PatientsComponent },
+      { path: '', redirectTo: 'panel', pathMatch: 'full' },
+    ],
   },
-  // { path: '**', component: NotFoundComponent }, // Captura qualquer outra URL
+  { path: '', redirectTo: 'login', pathMatch: 'full' },
 ];

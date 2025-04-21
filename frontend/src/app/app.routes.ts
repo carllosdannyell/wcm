@@ -7,7 +7,8 @@ import { PatientsComponent } from './pages/patients/patients.component';
 import { AuthGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
-  { path: '', component: LoginComponent },
+  { path: '', redirectTo: 'login', pathMatch: 'full' },
+  { path: 'login', component: LoginComponent },
   { path: 'panel', component: PanelComponent },
   { path: 'profile', component: ProfileComponent },
   { path: 'patients', component: PatientsComponent },

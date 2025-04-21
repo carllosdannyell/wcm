@@ -1,32 +1,40 @@
 <div class="login-container">
   <h2>Login</h2>
   <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+    <!-- E-mail -->
     <label for="email">E-mail</label>
-    <input id="email" formControlName="email" type="email" />
-    <div
-      *ngIf="loginForm.get('email')?.invalid && loginForm.get('email')?.touched"
-      class="error"
-    >
+    <input
+      id="email"
+      type="email"
+      formControlName="email"
+      autocomplete="email"
+      [class.invalid]="email.invalid && email.dirty"
+    />
+    <div *ngIf="email.invalid && email.dirty" class="error">
       E-mail inválido
     </div>
 
+    <!-- Senha -->
     <label for="password">Senha</label>
-    <input id="password" formControlName="password" type="password" />
-    <div
-      *ngIf="
-        loginForm.get('password')?.invalid && loginForm.get('password')?.touched
-      "
-      class="error"
-    >
+    <input
+      id="password"
+      type="password"
+      formControlName="password"
+      autocomplete="current-password"
+      [class.invalid]="password.invalid && password.dirty"
+    />
+    <div *ngIf="password.invalid && password.dirty" class="error">
       Senha é obrigatória
     </div>
 
+    <!-- Erro geral -->
     <div *ngIf="errorMessage" class="error-message">
       {{ errorMessage }}
     </div>
 
+    <!-- Botão -->
     <button type="submit" [disabled]="isSubmitting || loginForm.invalid">
-      Entrar
+      {{ isSubmitting ? 'Entrando...' : 'Entrar' }}
     </button>
   </form>
 </div>

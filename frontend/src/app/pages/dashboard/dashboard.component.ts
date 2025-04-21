@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { jwtDecode } from 'jwt-decode';
 
 @Component({
   standalone: true,
@@ -12,6 +13,7 @@ import { CommonModule } from '@angular/common';
 export class DashboardComponent {
   token: string | null = null;
   menuOpen: boolean = false;
+  username: string = '';
 
   constructor(private router: Router) {}
 
@@ -20,6 +22,10 @@ export class DashboardComponent {
 
     if (!this.token) {
       this.router.navigate(['/']);
+    } else {
+      // Decodificar o token JWT para extrair as informações do usuário
+      const decodedToken: any = jwtDecode(this.token);
+      this.username = decodedToken.name || 'Usuário'; // Defina o campo que contém o nome do usuário no seu token
     }
   }
 
@@ -30,5 +36,11 @@ export class DashboardComponent {
 
   toggleMenu(): void {
     this.menuOpen = !this.menuOpen;
+  }
+
+  // Função para navegação manual ao clicar
+  navigateTo(path: string): void {
+    this.router.navigate([path]);
+    this.menuOpen = false; // Fecha o menu ao navegar
   }
 }

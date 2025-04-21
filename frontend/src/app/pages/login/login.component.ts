@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 import { Router } from '@angular/router';
@@ -12,7 +12,7 @@ import { ReactiveFormsModule } from '@angular/forms';
   styleUrls: ['./login.component.css'],
   imports: [CommonModule, ReactiveFormsModule],
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
   loginForm: FormGroup;
   errorMessage: string = '';
   isSubmitting = false;
@@ -29,14 +29,10 @@ export class LoginComponent {
   }
 
   ngOnInit(): void {
+    // Se o token já estiver salvo, redireciona para o dashboard
     if (typeof window !== 'undefined' && localStorage.getItem('access_token')) {
       this.router.navigate(['/dashboard']);
     }
-
-    this.loginForm = this.fb.group({
-      email: ['', [Validators.required, Validators.email]],
-      password: ['', Validators.required],
-    });
   }
 
   async onSubmit(): Promise<void> {
@@ -60,5 +56,13 @@ export class LoginComponent {
         this.isSubmitting = false;
       },
     });
+  }
+
+  get email() {
+    return this.loginForm.get('email')!;
+  }
+  
+  get password() {
+    return this.loginForm.get('password')!;
   }
 }

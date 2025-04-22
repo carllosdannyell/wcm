@@ -47,4 +47,11 @@ export class PatientsGateway
     this.logger.log(`Unlock field: ${data.field}`);
     this.server.emit('field-unlocked', data);
   }
+
+  @SubscribeMessage('update-field')
+  handleUpdateField(
+    @MessageBody() data: { field: string; value: string; user: string },
+  ) {
+    this.server.emit('field-updated', data);
+  }
 }

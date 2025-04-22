@@ -4,87 +4,110 @@
     ➕ Novo Paciente
   </button>
 
-  <div *ngIf="showForm" class="form-container">
-    <h3>{{ selectedPatient ? "Editar Paciente" : "Novo Paciente" }}</h3>
-
-    <div class="form-group">
-      <label for="name">Nome:</label>
-      <input
-        id="name"
-        [(ngModel)]="formPatient.name"
-        (focus)="onFocus('name')"
-        (blur)="onBlur('name')"
-        [disabled]="isFieldLocked('name')"
-      />
-      <small *ngIf="isFieldLocked('name')"
-        >Editando: {{ getLocker("name") }}</small
-      >
-    </div>
-
-    <div class="form-group">
-      <label for="email">Email:</label>
-      <input
-        id="email"
-        [(ngModel)]="formPatient.email"
-        (focus)="onFocus('email')"
-        (blur)="onBlur('email')"
-        [disabled]="isFieldLocked('email')"
-      />
-      <small *ngIf="isFieldLocked('email')"
-        >Editando: {{ getLocker("email") }}</small
-      >
-    </div>
-
-    <div class="form-group">
-      <label for="phone">Telefone:</label>
-      <input
-        id="phone"
-        [(ngModel)]="formPatient.phone"
-        (focus)="onFocus('phone')"
-        (blur)="onBlur('phone')"
-        [disabled]="isFieldLocked('phone')"
-      />
-      <small *ngIf="isFieldLocked('phone')"
-        >Editando: {{ getLocker("phone") }}</small
-      >
-    </div>
-
-    <div class="form-group">
-      <label for="address">Endereço:</label>
-      <input
-        id="address"
-        [(ngModel)]="formPatient.address"
-        (focus)="onFocus('address')"
-        (blur)="onBlur('address')"
-        [disabled]="isFieldLocked('address')"
-      />
-      <small *ngIf="isFieldLocked('address')"
-        >Editando: {{ getLocker("address") }}</small
-      >
-    </div>
-
-    <div class="form-actions">
-      <button (click)="savePatient()">Salvar</button>
-      <button (click)="cancelForm()">Cancelar</button>
+  <div class="patient-list">
+    <div *ngFor="let patient of patients" class="patient-item">
+      <span>{{ patient.name }}</span>
+      <div class="actions">
+        <button (click)="openViewModal(patient)">👁️ Ver</button>
+        <button (click)="openEditModal(patient)">✏️ Editar</button>
+        <button class="delete" (click)="openDeleteModal(patient)">
+          🗑️ Excluir
+        </button>
+      </div>
     </div>
   </div>
 
-  <div *ngFor="let patient of patients" class="patient-card">
-    <div class="patient-header" (click)="toggleAccordion(patient)">
-      <strong>{{ patient.name }}</strong>
-      <span class="arrow">{{ patient.expanded ? "▲" : "▼" }}</span>
+  <!-- View Modal -->
+  <div *ngIf="showViewModal" class="modal">
+    <div class="modal-content">
+      <h3>Detalhes do Paciente</h3>
+      <p><strong>Nome:</strong> {{ selectedPatient?.name }}</p>
+      <p><strong>Email:</strong> {{ selectedPatient?.email }}</p>
+      <p><strong>Telefone:</strong> {{ selectedPatient?.phone }}</p>
+      <p><strong>Endereço:</strong> {{ selectedPatient?.address }}</p>
+      <div class="modal-actions">
+        <button (click)="closeModals()">Fechar</button>
+      </div>
     </div>
+  </div>
 
-    <div *ngIf="patient.expanded" class="patient-details">
-      <p><strong>Email:</strong> {{ patient.email }}</p>
-      <p><strong>Telefone:</strong> {{ patient.phone }}</p>
-      <p><strong>Endereço:</strong> {{ patient.address }}</p>
-      <div class="actions">
-        <button (click)="viewPatient(patient)">👁️ Visualizar</button>
-        <button (click)="openEditForm(patient)">✏️ Editar</button>
-        <button class="delete" (click)="confirmDelete(patient)">
-          🗑️ Excluir
-        </button>
+  <!-- Edit/Create Modal -->
+  <div *ngIf="showEditModal" class="modal">
+    <div class="modal-content">
+      <h3>{{ selectedPatient ? "Editar Paciente" : "Novo Paciente" }}</h3>
+      <div class="form-group">
+        <label for="name">Nome:</label>
+        <input
+          id="name"
+          [(ngModel)]="formPatient.name"
+          (focus)="onFocus('name')"
+          (blur)="onBlur('name')"
+          (input)="onInput('name', formPatient.name)"
+          [disabled]="isFieldLocked('name')"
+        />
+        <small *ngIf="isFieldLocked('name')"
+          >Editando: {{ getLocker("name") }}</small
+        >
+      </div>
+      <div class="form-group">
+        <label for="email">Email:</label>
+        <input
+          id="email"
+          [(ngModel)]="formPatient.email"
+          (focus)="onFocus('email')"
+          (blur)="onBlur('email')"
+          (input)="onInput('email', formPatient.email)"
+          [disabled]="isFieldLocked('email')"
+        />
+        <small *ngIf="isFieldLocked('email')"
+          >Editando: {{ getLocker("email") }}</small
+        >
+      </div>
+      <div class="form-group">
+        <label for="phone">Telefone:</label>
+        <input
+          id="phone"
+          [(ngModel)]="formPatient.phone"
+          (focus)="onFocus('phone')"
+          (blur)="onBlur('phone')"
+          (input)="onInput('phone', formPatient.phone)"
+          [disabled]="isFieldLocked('phone')"
+        />
+        <small *ngIf="isFieldLocked('phone')"
+          >Editando: {{ getLocker("phone") }}</small
+        >
+      </div>
+      <div class="form-group">
+        <label for="address">Endereço:</label>
+        <input
+          id="address"
+          [(ngModel)]="formPatient.address"
+          (focus)="onFocus('address')"
+          (blur)="onBlur('address')"
+          (input)="onInput('address', formPatient.address)"
+          [disabled]="isFieldLocked('address')"
+        />
+        <small *ngIf="isFieldLocked('address')"
+          >Editando: {{ getLocker("address") }}</small
+        >
+      </div>
+      <div class="modal-actions">
+        <button (click)="savePatient()">Salvar</button>
+        <button (click)="closeModals()">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div *ngIf="showDeleteModal" class="modal">
+    <div class="modal-content">
+      <h3>Confirmar Exclusão</h3>
+      <p>
+        Tem certeza que deseja excluir o paciente "{{ selectedPatient?.name }}"?
+      </p>
+      <div class="modal-actions">
+        <button class="delete" (click)="confirmDelete()">Excluir</button>
+        <button (click)="closeModals()">Cancelar</button>
       </div>
     </div>
   </div>

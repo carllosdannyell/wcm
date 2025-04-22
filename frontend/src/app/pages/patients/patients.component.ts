@@ -20,7 +20,9 @@ import { io, Socket } from 'socket.io-client';
 })
 export class PatientsComponent implements OnInit, OnDestroy {
   patients: Patient[] = [];
-  showForm: boolean = false;
+  showViewModal: boolean = false;
+  showEditModal: boolean = false;
+  showDeleteModal: boolean = false;
   selectedPatient: Patient | null = null;
   formPatient: Omit<Patient, 'id' | 'created_at' | 'updated_at' | 'expanded'> =
     {
@@ -66,13 +68,18 @@ export class PatientsComponent implements OnInit, OnDestroy {
       delete this.fieldLocks[field];
     });
 
+    this.socket.on('field-updated', ({ field, value, user }) => {
+      if (user !== this.currentUser && this.showEditModal) {
+        (this.formPatient as any)[field] = value;
+      }
+    });
+
     this.socket.on('patient-updated', (updatedPatient: Patient) => {
       const index = this.patients.findIndex((p) => p.id === updatedPatient.id);
       if (index !== -1) {
-        this.patients[index] = {
-          ...updatedPatient,
-          expanded: this.patients[index].expanded,
-        };
+        this.patients[index] = { ...updatedPatient };
+      } else {
+        this.patients.push({ ...updatedPatient });
       }
     });
   }
@@ -84,27 +91,16 @@ export class PatientsComponent implements OnInit, OnDestroy {
 
   loadPatients(): void {
     this.patientService.getAll().subscribe((data) => {
-      this.patients = data.map((p) => ({ ...p, expanded: false }));
+      this.patients = data;
     });
   }
 
-  toggleAccordion(patient: Patient): void {
-    patient.expanded = !patient.expanded;
+  openViewModal(patient: Patient): void {
+    this.selectedPatient = patient;
+    this.showViewModal = true;
   }
 
-  viewPatient(patient: Patient): void {
-    alert(
-      `Nome: ${patient.name}\nEmail: ${patient.email}\nTelefone: ${patient.phone}\nEndereço: ${patient.address}`
-    );
-  }
-
-  openCreateForm(): void {
-    this.selectedPatient = null;
-    this.formPatient = { name: '', email: '', phone: '', address: '' };
-    this.showForm = true;
-  }
-
-  openEditForm(patient: Patient): void {
+  openEditModal(patient: Patient): void {
     this.selectedPatient = patient;
     this.formPatient = {
       name: patient.name,
@@ -112,7 +108,20 @@ export class PatientsComponent implements OnInit, OnDestroy {
       phone: patient.phone,
       address: patient.address,
     };
-    this.showForm = true;
+    this.showEditModal = true;
+  }
+
+  openDeleteModal(patient: Patient): void {
+    this.selectedPatient = patient;
+    this.showDeleteModal = true;
+  }
+
+  closeModals(): void {
+    this.showViewModal = false;
+    this.showEditModal = false;
+    this.showDeleteModal = false;
+    this.selectedPatient = null;
+    this.unlockAllFields();
   }
 
   savePatient(): void {
@@ -131,33 +140,27 @@ export class PatientsComponent implements OnInit, OnDestroy {
         .update(this.selectedPatient.id, this.formPatient)
         .subscribe((updatedPatient) => {
           this.loadPatients();
-          this.showForm = false;
-          this.unlockAllFields();
+          this.closeModals();
           alert('Paciente atualizado com sucesso!');
           this.socket.emit('patient-updated', updatedPatient);
         });
     } else {
       this.patientService.create(this.formPatient).subscribe((newPatient) => {
         this.loadPatients();
-        this.showForm = false;
+        this.closeModals();
         alert('Paciente criado com sucesso!');
         this.socket.emit('patient-updated', newPatient);
       });
     }
   }
 
-  cancelForm(): void {
-    this.unlockAllFields();
-    this.showForm = false;
-    this.selectedPatient = null;
-  }
-
-  confirmDelete(patient: Patient): void {
-    if (
-      confirm(`Tem certeza que deseja excluir o paciente "${patient.name}"?`)
-    ) {
-      this.patientService.delete(patient.id).subscribe(() => {
-        this.patients = this.patients.filter((p) => p.id !== patient.id);
+  confirmDelete(): void {
+    if (this.selectedPatient) {
+      this.patientService.delete(this.selectedPatient.id).subscribe(() => {
+        this.patients = this.patients.filter(
+          (p) => p.id !== this.selectedPatient!.id
+        );
+        this.closeModals();
         alert('Paciente excluído com sucesso!');
       });
     }
@@ -171,16 +174,26 @@ export class PatientsComponent implements OnInit, OnDestroy {
     this.socket.emit('unlock-field', { field });
   }
 
+  onInput(field: string, value: string): void {
+    this.socket.emit('update-field', { field, value, user: this.currentUser });
+  }
+
   isFieldLocked(field: string): boolean {
     return !!this.fieldLocks[field];
   }
 
   getLocker(field: string): string {
-    return this.fieldLocks[field];
+    return this.fieldLocks[field] || '';
+  }
+
+  openCreateForm(): void {
+    this.selectedPatient = null;
+    this.formPatient = { name: '', email: '', phone: '', address: '' };
+    this.showEditModal = true;
   }
 
   private unlockAllFields(): void {
-    Object.keys(this.formPatient).forEach((field) => {
+    ['name', 'email', 'phone', 'address'].forEach((field) => {
       this.socket.emit('unlock-field', { field });
     });
   }

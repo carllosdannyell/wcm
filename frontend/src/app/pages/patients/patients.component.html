@@ -31,64 +31,91 @@
     </div>
   </div>
 
-  <!-- Edit/Create Modal -->
+  <!-- Create Modal -->
+  <div *ngIf="showCreateModal" class="modal">
+    <div class="modal-content">
+      <h3>Novo Paciente</h3>
+      <div class="form-group">
+        <label for="create-name">Nome:</label>
+        <input id="create-name" [(ngModel)]="newPatient.name" />
+      </div>
+      <div class="form-group">
+        <label for="create-email">Email:</label>
+        <input id="create-email" [(ngModel)]="newPatient.email" />
+      </div>
+      <div class="form-group">
+        <label for="create-phone">Telefone:</label>
+        <input id="create-phone" [(ngModel)]="newPatient.phone" />
+      </div>
+      <div class="form-group">
+        <label for="create-address">Endereço:</label>
+        <input id="create-address" [(ngModel)]="newPatient.address" />
+      </div>
+      <div class="modal-actions">
+        <button (click)="createPatient()">Salvar</button>
+        <button (click)="closeModals()">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Modal -->
   <div *ngIf="showEditModal" class="modal">
     <div class="modal-content">
-      <h3>{{ selectedPatient ? "Editar Paciente" : "Novo Paciente" }}</h3>
+      <h3>Editar Paciente</h3>
       <div class="form-group">
-        <label for="name">Nome:</label>
+        <label for="edit-name">Nome:</label>
         <input
-          id="name"
+          id="edit-name"
           [(ngModel)]="formPatient.name"
-          (focus)="onFocus('name')"
-          (blur)="onBlur('name')"
-          (input)="onInput('name', formPatient.name)"
-          [disabled]="isFieldLocked('name')"
+          (focus)="onFocus('name', 'edit')"
+          (blur)="onBlur('name', 'edit')"
+          (input)="onInput('name', formPatient.name, 'edit')"
+          [disabled]="isFieldLocked('name', 'edit')"
         />
-        <small *ngIf="isFieldLocked('name')"
-          >Editando: {{ getLocker("name") }}</small
+        <small *ngIf="isFieldLocked('name', 'edit')"
+          >Editando: {{ getLocker("name", "edit") }}</small
         >
       </div>
       <div class="form-group">
-        <label for="email">Email:</label>
+        <label for="edit-email">Email:</label>
         <input
-          id="email"
+          id="edit-email"
           [(ngModel)]="formPatient.email"
-          (focus)="onFocus('email')"
-          (blur)="onBlur('email')"
-          (input)="onInput('email', formPatient.email)"
-          [disabled]="isFieldLocked('email')"
+          (focus)="onFocus('email', 'edit')"
+          (blur)="onBlur('email', 'edit')"
+          (input)="onInput('email', formPatient.email, 'edit')"
+          [disabled]="isFieldLocked('email', 'edit')"
         />
-        <small *ngIf="isFieldLocked('email')"
-          >Editando: {{ getLocker("email") }}</small
+        <small *ngIf="isFieldLocked('email', 'edit')"
+          >Editando: {{ getLocker("email", "edit") }}</small
         >
       </div>
       <div class="form-group">
-        <label for="phone">Telefone:</label>
+        <label for="edit-phone">Telefone:</label>
         <input
-          id="phone"
+          id="edit-phone"
           [(ngModel)]="formPatient.phone"
-          (focus)="onFocus('phone')"
-          (blur)="onBlur('phone')"
-          (input)="onInput('phone', formPatient.phone)"
-          [disabled]="isFieldLocked('phone')"
+          (focus)="onFocus('phone', 'edit')"
+          (blur)="onBlur('phone', 'edit')"
+          (input)="onInput('phone', formPatient.phone, 'edit')"
+          [disabled]="isFieldLocked('phone', 'edit')"
         />
-        <small *ngIf="isFieldLocked('phone')"
-          >Editando: {{ getLocker("phone") }}</small
+        <small *ngIf="isFieldLocked('phone', 'edit')"
+          >Editando: {{ getLocker("phone", "edit") }}</small
         >
       </div>
       <div class="form-group">
-        <label for="address">Endereço:</label>
+        <label for="edit-address">Endereço:</label>
         <input
-          id="address"
+          id="edit-address"
           [(ngModel)]="formPatient.address"
-          (focus)="onFocus('address')"
-          (blur)="onBlur('address')"
-          (input)="onInput('address', formPatient.address)"
-          [disabled]="isFieldLocked('address')"
+          (focus)="onFocus('address', 'edit')"
+          (blur)="onBlur('address', 'edit')"
+          (input)="onInput('address', formPatient.address, 'edit')"
+          [disabled]="isFieldLocked('address', 'edit')"
         />
-        <small *ngIf="isFieldLocked('address')"
-          >Editando: {{ getLocker("address") }}</small
+        <small *ngIf="isFieldLocked('address', 'edit')"
+          >Editando: {{ getLocker("address", "edit") }}</small
         >
       </div>
       <div class="modal-actions">

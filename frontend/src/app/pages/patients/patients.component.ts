@@ -22,6 +22,7 @@ export class PatientsComponent implements OnInit, OnDestroy {
   patients: Patient[] = [];
   showViewModal: boolean = false;
   showEditModal: boolean = false;
+  showCreateModal: boolean = false;
   showDeleteModal: boolean = false;
   selectedPatient: Patient | null = null;
   formPatient: Omit<Patient, 'id' | 'created_at' | 'updated_at' | 'expanded'> =
@@ -31,9 +32,20 @@ export class PatientsComponent implements OnInit, OnDestroy {
       phone: '',
       address: '',
     };
+  newPatient: Omit<Patient, 'id' | 'created_at' | 'updated_at' | 'expanded'> = {
+    name: '',
+    email: '',
+    phone: '',
+    address: '',
+  };
 
   socket!: Socket;
-  fieldLocks: { [key: string]: string } = {};
+  fieldLocks: { [key: string]: { [context: string]: string } } = {
+    name: {},
+    email: {},
+    phone: {},
+    address: {},
+  };
   currentUser: string = '';
 
   constructor(
@@ -58,9 +70,9 @@ export class PatientsComponent implements OnInit, OnDestroy {
       transports: ['websocket'],
     });
 
-    this.socket.on('field-locked', ({ field, user }) => {
+    this.socket.on('field-locked', ({ field, user, context }) => {
       if (user !== this.currentUser) {
-        this.fieldLocks[field] = user;
+        this.fieldLocks[field][context] = user;
       }
     });
 
@@ -68,13 +80,17 @@ export class PatientsComponent implements OnInit, OnDestroy {
       this.patients = this.patients.filter((p) => p.id !== data.id);
     });
 
-    this.socket.on('field-unlocked', ({ field }) => {
-      delete this.fieldLocks[field];
+    this.socket.on('field-unlocked', ({ field, context }) => {
+      delete this.fieldLocks[field][context];
     });
 
-    this.socket.on('field-updated', ({ field, value, user }) => {
-      if (user !== this.currentUser && this.showEditModal) {
-        (this.formPatient as any)[field] = value;
+    this.socket.on('field-updated', ({ field, value, user, context }) => {
+      if (user !== this.currentUser) {
+        if (context === 'edit' && this.showEditModal) {
+          (this.formPatient as any)[field] = value;
+        } else if (context === 'create' && this.showCreateModal) {
+          (this.newPatient as any)[field] = value;
+        }
       }
     });
 
@@ -82,9 +98,11 @@ export class PatientsComponent implements OnInit, OnDestroy {
       const index = this.patients.findIndex((p) => p.id === updatedPatient.id);
       if (index !== -1) {
         this.patients[index] = { ...updatedPatient };
-      } else {
-        this.patients.push({ ...updatedPatient });
       }
+    });
+
+    this.socket.on('patient-created', (newPatient: Patient) => {
+      this.patients.push({ ...newPatient });
     });
   }
 
@@ -115,6 +133,12 @@ export class PatientsComponent implements OnInit, OnDestroy {
     this.showEditModal = true;
   }
 
+  openCreateForm(): void {
+    this.selectedPatient = null;
+    this.newPatient = { name: '', email: '', phone: '', address: '' };
+    this.showCreateModal = true;
+  }
+
   openDeleteModal(patient: Patient): void {
     this.selectedPatient = patient;
     this.showDeleteModal = true;
@@ -123,9 +147,28 @@ export class PatientsComponent implements OnInit, OnDestroy {
   closeModals(): void {
     this.showViewModal = false;
     this.showEditModal = false;
+    this.showCreateModal = false;
     this.showDeleteModal = false;
     this.selectedPatient = null;
     this.unlockAllFields();
+  }
+
+  createPatient(): void {
+    if (
+      !this.newPatient.name ||
+      !this.newPatient.email ||
+      !this.newPatient.phone ||
+      !this.newPatient.address
+    ) {
+      alert('Por favor, preencha todos os campos.');
+      return;
+    }
+
+    this.patientService.create(this.newPatient).subscribe((newPatient) => {
+      this.loadPatients();
+      this.closeModals();
+      this.socket.emit('patient-created', newPatient);
+    });
   }
 
   savePatient(): void {
@@ -147,12 +190,6 @@ export class PatientsComponent implements OnInit, OnDestroy {
           this.closeModals();
           this.socket.emit('patient-updated', updatedPatient);
         });
-    } else {
-      this.patientService.create(this.formPatient).subscribe((newPatient) => {
-        this.loadPatients();
-        this.closeModals();
-        this.socket.emit('patient-updated', newPatient);
-      });
     }
   }
 
@@ -160,46 +197,49 @@ export class PatientsComponent implements OnInit, OnDestroy {
     if (this.selectedPatient) {
       this.patientService.delete(this.selectedPatient.id).subscribe(() => {
         const deletedId = this.selectedPatient!.id;
-
         this.patients = this.patients.filter((p) => p.id !== deletedId);
-
-        this.socket.emit('patient-deleted', { id: deletedId }); // 🔥 Emite para os outros
-
+        this.socket.emit('patient-deleted', { id: deletedId });
         this.closeModals();
       });
     }
   }
 
-  onFocus(field: string): void {
-    this.socket.emit('lock-field', { field, user: this.currentUser });
+  onFocus(field: string, context: 'create' | 'edit'): void {
+    this.socket.emit('lock-field', { field, user: this.currentUser, context });
   }
 
-  onBlur(field: string): void {
-    this.socket.emit('unlock-field', { field, user: this.currentUser });
+  onBlur(field: string, context: 'create' | 'edit'): void {
+    this.socket.emit('unlock-field', {
+      field,
+      user: this.currentUser,
+      context,
+    });
   }
 
-  onInput(field: string, value: string): void {
-    this.socket.emit('update-field', { field, value, user: this.currentUser });
+  onInput(field: string, value: string, context: 'create' | 'edit'): void {
+    this.socket.emit('update-field', {
+      field,
+      value,
+      user: this.currentUser,
+      context,
+    });
   }
 
-  isFieldLocked(field: string): boolean {
-    return !!this.fieldLocks[field];
+  isFieldLocked(field: string, context: 'create' | 'edit'): boolean {
+    return !!this.fieldLocks[field][context];
   }
 
-  getLocker(field: string): string {
-    return this.fieldLocks[field] || '';
-  }
-
-  openCreateForm(): void {
-    this.selectedPatient = null;
-    this.formPatient = { name: '', email: '', phone: '', address: '' };
-    this.showEditModal = true;
+  getLocker(field: string, context: 'create' | 'edit'): string {
+    return this.fieldLocks[field][context] || '';
   }
 
   private unlockAllFields(): void {
     ['name', 'email', 'phone', 'address'].forEach((field) => {
-      this.socket.emit('unlock-field', { field });
+      ['create', 'edit'].forEach((context) => {
+        this.socket.emit('unlock-field', { field, context });
+      });
     });
+    this.fieldLocks = { name: {}, email: {}, phone: {}, address: {} };
   }
 
   private getCurrentUserFromToken(token: string): string {

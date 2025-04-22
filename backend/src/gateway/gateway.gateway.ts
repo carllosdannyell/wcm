@@ -20,6 +20,7 @@ export class PatientsGateway
 {
   @WebSocketServer()
   server: Server;
+  private fieldLocks: Map<string, string> = new Map();
 
   private logger: Logger = new Logger('PatientsGateway');
 
@@ -38,20 +39,32 @@ export class PatientsGateway
 
   @SubscribeMessage('lock-field')
   handleLockField(@MessageBody() data: { field: string; user: string }) {
-    this.logger.log(`Lock field: ${data.field} by ${data.user}`);
-    this.server.emit('field-locked', data);
+    if (!this.fieldLocks.has(data.field)) {
+      this.fieldLocks.set(data.field, data.user);
+      this.logger.log(`Field locked: ${data.field} by ${data.user}`);
+      this.server.emit('field-locked', data);
+    }
   }
 
   @SubscribeMessage('unlock-field')
-  handleUnlockField(@MessageBody() data: { field: string }) {
-    this.logger.log(`Unlock field: ${data.field}`);
-    this.server.emit('field-unlocked', data);
+  handleUnlockField(@MessageBody() data: { field: string; user: string }) {
+    const locker = this.fieldLocks.get(data.field);
+    if (locker === data.user) {
+      this.fieldLocks.delete(data.field);
+      this.logger.log(`Field unlocked: ${data.field} by ${data.user}`);
+      this.server.emit('field-unlocked', data);
+    }
   }
 
-  @SubscribeMessage('update-field')
+  // @SubscribeMessage('patient-deleted')
+  // handleRemove(@MessageBody() data: { id: string }) {
+  //   this.server.emit('patient-deleted', data);
+  // }
+
+  @SubscribeMessage('update-patient')
   handleUpdateField(
     @MessageBody() data: { field: string; value: string; user: string },
   ) {
-    this.server.emit('field-updated', data);
+    this.server.emit('patient-updated', data);
   }
 }

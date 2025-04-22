@@ -64,6 +64,10 @@ export class PatientsComponent implements OnInit, OnDestroy {
       }
     });
 
+    this.socket.on('patient-deleted', (data) => {
+      this.patients = this.patients.filter((p) => p.id !== data.id);
+    });
+
     this.socket.on('field-unlocked', ({ field }) => {
       delete this.fieldLocks[field];
     });
@@ -141,14 +145,12 @@ export class PatientsComponent implements OnInit, OnDestroy {
         .subscribe((updatedPatient) => {
           this.loadPatients();
           this.closeModals();
-          alert('Paciente atualizado com sucesso!');
           this.socket.emit('patient-updated', updatedPatient);
         });
     } else {
       this.patientService.create(this.formPatient).subscribe((newPatient) => {
         this.loadPatients();
         this.closeModals();
-        alert('Paciente criado com sucesso!');
         this.socket.emit('patient-updated', newPatient);
       });
     }
@@ -157,11 +159,13 @@ export class PatientsComponent implements OnInit, OnDestroy {
   confirmDelete(): void {
     if (this.selectedPatient) {
       this.patientService.delete(this.selectedPatient.id).subscribe(() => {
-        this.patients = this.patients.filter(
-          (p) => p.id !== this.selectedPatient!.id
-        );
+        const deletedId = this.selectedPatient!.id;
+
+        this.patients = this.patients.filter((p) => p.id !== deletedId);
+
+        this.socket.emit('patient-deleted', { id: deletedId }); // 🔥 Emite para os outros
+
         this.closeModals();
-        alert('Paciente excluído com sucesso!');
       });
     }
   }
@@ -171,7 +175,7 @@ export class PatientsComponent implements OnInit, OnDestroy {
   }
 
   onBlur(field: string): void {
-    this.socket.emit('unlock-field', { field });
+    this.socket.emit('unlock-field', { field, user: this.currentUser });
   }
 
   onInput(field: string, value: string): void {

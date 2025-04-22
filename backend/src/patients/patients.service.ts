@@ -4,12 +4,14 @@ import { Repository } from 'typeorm';
 import { Patient } from './entities/patient.entity';
 import { CreatePatientDto } from './dto/create-patient.dto';
 import { UpdatePatientDto } from './dto/update-patient.dto';
+import { PatientsGateway } from '../gateway/gateway.gateway'; //
 
 @Injectable()
 export class PatientsService {
   constructor(
     @InjectRepository(Patient)
     private readonly patientRepository: Repository<Patient>,
+    private readonly patientsGateway: PatientsGateway,
   ) {}
 
   create(createPatientDto: CreatePatientDto) {
@@ -37,6 +39,10 @@ export class PatientsService {
 
   async remove(id: number) {
     const patient = await this.findOne(id);
-    return this.patientRepository.remove(patient);
+    await this.patientRepository.remove(patient);
+
+    this.patientsGateway.server.emit('patient-deleted', { id });
+
+    return { message: `Paciente com ID ${id} foi removido.` };
   }
 }

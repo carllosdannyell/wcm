@@ -7,6 +7,7 @@ import { ProfileComponent } from './pages/profile/profile.component';
 import { PatientsComponent } from './pages/patients/patients.component';
 
 export const routes: Routes = [
+  { path: '', redirectTo: 'login', pathMatch: 'full' },
   { path: 'login', component: LoginComponent },
   {
     path: 'dashboard',
@@ -19,5 +20,4 @@ export const routes: Routes = [
       { path: '', redirectTo: 'panel', pathMatch: 'full' },
     ],
   },
-  { path: '', redirectTo: 'login', pathMatch: 'full' },
 ];

@@ -5,9 +5,10 @@ import { AuthGuard } from './guards/auth.guard';
 import { PanelComponent } from './pages/panel/panel.component';
 import { ProfileComponent } from './pages/profile/profile.component';
 import { PatientsComponent } from './pages/patients/patients.component';
+import { AppComponent } from './app.component';
 
 export const routes: Routes = [
-  { path: '', redirectTo: 'login', pathMatch: 'full' },
+  { path: '', component: AppComponent }, // Componente vazio ou de carregamento
   { path: 'login', component: LoginComponent },
   {
     path: 'dashboard',

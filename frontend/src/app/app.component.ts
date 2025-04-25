@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-root',
@@ -8,6 +9,13 @@ import { RouterOutlet } from '@angular/router';
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
-export class AppComponent {
-  title = 'frontend';
+export class AppComponent implements OnInit {
+
+  constructor(private router: Router) {}
+
+  ngOnInit(): void {
+    if (typeof window !== 'undefined' && !localStorage.getItem('access_token')) {
+      this.router.navigate(['login']);
+    }
+  }
 }

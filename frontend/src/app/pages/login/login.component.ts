@@ -30,7 +30,10 @@ export class LoginComponent implements OnInit {
 
   ngOnInit(): void {
     // Se o token já estiver salvo, redireciona para o dashboard
-    if (typeof window !== 'undefined' && localStorage.getItem('access_token')) {
+    if (
+      typeof window !== 'undefined' &&
+      sessionStorage.getItem('access_token')
+    ) {
       this.router.navigate(['/dashboard']);
     }
   }
@@ -48,7 +51,7 @@ export class LoginComponent implements OnInit {
 
     (await this.authService.login(email, password)).subscribe({
       next: (response: { access_token: string }) => {
-        localStorage.setItem('access_token', response.access_token);
+        sessionStorage.setItem('access_token', response.access_token);
         this.router.navigate(['/dashboard']);
       },
       error: () => {
@@ -61,7 +64,7 @@ export class LoginComponent implements OnInit {
   get email() {
     return this.loginForm.get('email')!;
   }
-  
+
   get password() {
     return this.loginForm.get('password')!;
   }

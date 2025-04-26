@@ -18,7 +18,7 @@ export class DashboardComponent {
   constructor(private router: Router) {}
 
   ngOnInit(): void {
-    this.token = localStorage.getItem('access_token');
+    this.token = sessionStorage.getItem('access_token');
 
     if (!this.token) {
       this.router.navigate(['/']);
@@ -30,7 +30,7 @@ export class DashboardComponent {
   }
 
   logout(): void {
-    localStorage.removeItem('access_token');
+    sessionStorage.removeItem('access_token');
     this.router.navigate(['/']);
   }
 

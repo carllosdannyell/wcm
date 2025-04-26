@@ -17,7 +17,7 @@ export class LayoutComponent {
   constructor(private router: Router) {}
 
   ngOnInit(): void {
-    const token = localStorage.getItem('access_token');
+    const token = sessionStorage.getItem('access_token');
     if (!token) this.router.navigate(['/']);
     else {
       // Decodificar e extrair nome de usuário se necessário
@@ -31,7 +31,7 @@ export class LayoutComponent {
   }
 
   logout() {
-    localStorage.removeItem('access_token');
+    sessionStorage.removeItem('access_token');
     this.router.navigate(['/']);
   }
 

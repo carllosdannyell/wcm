@@ -15,7 +15,7 @@ export interface Patient {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class PatientService {
   private apiUrl = 'http://localhost:3000/patients';
@@ -28,27 +28,40 @@ export class PatientService {
   private getAuthHeaders(): HttpHeaders {
     let token: string | null = null;
     if (isPlatformBrowser(this.platformId)) {
-      token = localStorage.getItem('access_token');
+      token = sessionStorage.getItem('access_token');
     }
     return new HttpHeaders({
-      'Authorization': `Bearer ${token || ''}`,
-      'Content-Type': 'application/json'
+      Authorization: `Bearer ${token || ''}`,
+      'Content-Type': 'application/json',
     });
   }
 
   getAll(): Observable<Patient[]> {
-    return this.http.get<Patient[]>(this.apiUrl, { headers: this.getAuthHeaders() });
+    return this.http.get<Patient[]>(this.apiUrl, {
+      headers: this.getAuthHeaders(),
+    });
   }
 
-  create(patient: Omit<Patient, 'id' | 'created_at' | 'updated_at' | 'expanded'>): Observable<Patient> {
-    return this.http.post<Patient>(this.apiUrl, patient, { headers: this.getAuthHeaders() });
+  create(
+    patient: Omit<Patient, 'id' | 'created_at' | 'updated_at' | 'expanded'>
+  ): Observable<Patient> {
+    return this.http.post<Patient>(this.apiUrl, patient, {
+      headers: this.getAuthHeaders(),
+    });
   }
 
-  update(id: number, patient: Omit<Patient, 'id' | 'created_at' | 'updated_at' | 'expanded'>): Observable<Patient> {
-    return this.http.patch<Patient>(`${this.apiUrl}/${id}`, patient, { headers: this.getAuthHeaders() });
+  update(
+    id: number,
+    patient: Omit<Patient, 'id' | 'created_at' | 'updated_at' | 'expanded'>
+  ): Observable<Patient> {
+    return this.http.patch<Patient>(`${this.apiUrl}/${id}`, patient, {
+      headers: this.getAuthHeaders(),
+    });
   }
 
   delete(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${id}`, { headers: this.getAuthHeaders() });
+    return this.http.delete<void>(`${this.apiUrl}/${id}`, {
+      headers: this.getAuthHeaders(),
+    });
   }
 }

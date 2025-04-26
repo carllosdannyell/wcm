@@ -56,7 +56,7 @@ export class PatientsComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
-      const token = localStorage.getItem('access_token');
+      const token = sessionStorage.getItem('access_token');
       if (!token) {
         this.router.navigate(['/']);
         return;

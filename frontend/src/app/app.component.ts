@@ -19,7 +19,7 @@ export class AppComponent implements OnInit {
     // Verifica se está no ambiente do navegador
     if (typeof window === 'undefined') return;
 
-    const token = localStorage.getItem('access_token');
+    const token = sessionStorage.getItem('access_token');
     const currentPath = window.location.pathname;
 
     if (!token && currentPath !== '/login') {

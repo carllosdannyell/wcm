@@ -1,0 +1,14 @@
+<div class="users-list">
+  <h2>Escolha um usuário para conversar:</h2>
+  <ul>
+    <li
+      *ngFor="let user of users"
+      (click)="startConversation(user)"
+      [class.loading]="loading"
+    >
+      <strong>{{ user.name }}</strong>
+      <small>({{ user.email }})</small>
+    </li>
+  </ul>
+  <div *ngIf="loading" class="spinner">Iniciando conversa…</div>
+</div>

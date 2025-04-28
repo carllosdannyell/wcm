@@ -6,6 +6,8 @@ import { PanelComponent } from './pages/panel/panel.component';
 import { ProfileComponent } from './pages/profile/profile.component';
 import { PatientsComponent } from './pages/patients/patients.component';
 import { AppComponent } from './app.component';
+import { ChatComponent } from './pages/chat/chat.component';
+import { ChatDetailComponent } from './pages/chat-detail/chat.detail';
 
 export const routes: Routes = [
   { path: '', component: AppComponent }, // Componente vazio ou de carregamento
@@ -19,6 +21,8 @@ export const routes: Routes = [
       { path: 'profile', component: ProfileComponent },
       { path: 'patients', component: PatientsComponent },
       { path: '', redirectTo: 'panel', pathMatch: 'full' },
+      { path: 'chat', component: ChatComponent },
+      { path: 'chat/:id', component: ChatDetailComponent },
     ],
   },
 ];

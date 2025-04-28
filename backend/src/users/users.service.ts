@@ -22,7 +22,8 @@ export class UsersService {
       password: hashedPassword,
     });
 
-    return this.userRepository.save(user);
+    const saved = await this.userRepository.save(user);
+    return this.findOne(saved.id);
   }
 
   async findAll(): Promise<User[]> {
@@ -30,7 +31,10 @@ export class UsersService {
   }
 
   async findOne(id: number): Promise<User> {
-    const user = await this.userRepository.findOne({ where: { id } });
+    const user = await this.userRepository.findOne({
+      where: { id },
+      select: ['id', 'name', 'email', 'createdAt', 'updatedAt'],
+    });
     if (!user) {
       throw new NotFoundException(`User with ID ${id} not found`);
     }

@@ -3,9 +3,10 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
-import { User } from './users/entities/user.entity';
 import { PatientsModule } from './patients/patients.module';
-import { Patient } from './patients/entities/patient.entity';
+import { ChatsModule } from './chats/chats.module';
+import { ChatUsersModule } from './chat-users/chat-users.module';
+import { MessagesModule } from './messages/messages.module';
 
 @Module({
   imports: [
@@ -17,12 +18,15 @@ import { Patient } from './patients/entities/patient.entity';
       username: 'root',
       password: 'root',
       database: 'clinica',
-      entities: [User, Patient],
+      entities: [__dirname + '/**/*.entity{.ts,.js}'],
       synchronize: true,
     }),
     UsersModule,
     AuthModule,
     PatientsModule,
+    ChatsModule,
+    ChatUsersModule,
+    MessagesModule,
   ],
 })
 export class AppModule {}

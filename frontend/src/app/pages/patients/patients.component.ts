@@ -47,6 +47,7 @@ export class PatientsComponent implements OnInit, OnDestroy {
     address: {},
   };
   currentUser: string = '';
+  counter: number = -2;
 
   constructor(
     private patientService: PatientService,
@@ -69,6 +70,17 @@ export class PatientsComponent implements OnInit, OnDestroy {
     this.socket = io('http://localhost:3000', {
       transports: ['websocket'],
     });
+
+    this.socket.on(
+      'editing-count',
+      (payload: { patientId: string; count: number; users: string[] }) => {
+        const pid = Number(payload.patientId); // agora é number
+
+        if (this.showEditModal && this.selectedPatient?.id === pid) {
+          this.counter = payload.count;
+        }
+      }
+    );
 
     this.socket.on('send-message', ({ field, user, context }) => {
       if (user !== this.currentUser) {
@@ -107,6 +119,13 @@ export class PatientsComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    // também garanto parar de editar
+    if (this.showEditModal && this.selectedPatient) {
+      this.socket.emit('stop-editing', {
+        patientId: this.selectedPatient.id,
+        user: this.currentUser,
+      });
+    }
     this.unlockAllFields();
     this.socket.disconnect();
   }
@@ -131,6 +150,11 @@ export class PatientsComponent implements OnInit, OnDestroy {
       address: patient.address,
     };
     this.showEditModal = true;
+    // aviso ao servidor que estou editando este paciente
+    this.socket.emit('start-editing', {
+      patientId: patient.id,
+      user: this.currentUser,
+    });
   }
 
   openCreateForm(): void {
@@ -145,10 +169,20 @@ export class PatientsComponent implements OnInit, OnDestroy {
   }
 
   closeModals(): void {
-    this.showViewModal = false;
-    this.showEditModal = false;
-    this.showCreateModal = false;
-    this.showDeleteModal = false;
+    // se eu estava editando, comunico que parei
+    if (this.showEditModal && this.selectedPatient) {
+      this.socket.emit('stop-editing', {
+        patientId: this.selectedPatient.id,
+        user: this.currentUser,
+      });
+      this.counter -= 1;
+    }
+    // resto do seu fechamento de modais…
+    this.showViewModal =
+      this.showEditModal =
+      this.showCreateModal =
+      this.showDeleteModal =
+        false;
     this.selectedPatient = null;
     this.unlockAllFields();
   }

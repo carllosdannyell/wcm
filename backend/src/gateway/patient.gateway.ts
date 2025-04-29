@@ -31,6 +31,8 @@ export class PatientsGateway
 
   private logger: Logger = new Logger('PatientsGateway');
 
+  private editingUsers: Map<string, Set<string>> = new Map();
+
   afterInit(_server: Server) {
     this.logger.log('WebSocket Gateway initialized');
   }
@@ -40,19 +42,47 @@ export class PatientsGateway
   }
 
   handleDisconnect(client: Socket) {
-    // Unlock fields locked by this client
-    this.fieldLocks.forEach((contextMap, field) => {
-      contextMap.forEach((user, context) => {
-        if (user === client.id) {
-          contextMap.delete(context);
-          this.server.emit('field-unlocked', { field, context });
-          this.logger.log(
-            `Field unlocked on disconnect: ${field} (${context})`,
-          );
-        }
-      });
+    // limpa este usuário de todos os sets
+    this.editingUsers.forEach((set, patientId) => {
+      if (set.delete(client.id)) {
+        this.emitCount(patientId);
+      }
+      if (set.size === 0) {
+        this.editingUsers.delete(patientId);
+      }
     });
-    this.logger.log(`Client disconnected: ${client.id}`);
+    this.logger.log(`Client disconnected ${client.id}`);
+  }
+
+  private emitCount(patientId: string) {
+    const set = this.editingUsers.get(patientId) || new Set();
+    this.server.emit('editing-count', {
+      patientId,
+      count: set.size,
+      users: Array.from(set),
+    });
+  }
+
+  @SubscribeMessage('start-editing')
+  handleStartEditing(@MessageBody() data: { patientId: string; user: string }) {
+    let set = this.editingUsers.get(data.patientId);
+    if (!set) {
+      set = new Set();
+      this.editingUsers.set(data.patientId, set);
+    }
+    set.add(data.user);
+    this.emitCount(data.patientId);
+    this.logger.log(`${data.user} started editing ${data.patientId}`);
+  }
+
+  @SubscribeMessage('stop-editing')
+  handleStopEditing(@MessageBody() data: { patientId: string; user: string }) {
+    const set = this.editingUsers.get(data.patientId);
+    if (set && set.delete(data.user)) {
+      this.emitCount(data.patientId);
+      if (set.size === 0) this.editingUsers.delete(data.patientId);
+      this.logger.log(`${data.user} stopped editing ${data.patientId}`);
+    }
   }
 
   @SubscribeMessage('lock-field')

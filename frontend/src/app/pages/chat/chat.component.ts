@@ -30,25 +30,11 @@ export class ChatComponent implements OnInit {
     this.loading = true;
 
     // 1) Cria o chat
-    this.chatService.createChat().subscribe({
-      next: (chat: Chat) => {
-        // 2) Adiciona currentUser
-        this.chatService.addChatUser(chat.id, this.currentUserId).subscribe({
-          next: () => {
-            // 3) Adiciona o outro usuário
-            this.chatService.addChatUser(chat.id, user.id).subscribe({
-              next: () => {
-                this.loading = false;
-                // 4) Navega para a tela de chat, passando o ID do chat
-                this.router.navigate(['/chat', chat.id]);
-              },
-              error: () => (this.loading = false),
-            });
-          },
-          error: () => (this.loading = false),
-        });
-      },
-      error: () => (this.loading = false),
-    });
+    this.chatService
+      .getOrCreateChat(this.currentUserId, user.id)
+      .subscribe((chat) => {
+        // se já existia, retorna o existente; senão, cria
+        this.router.navigate(['dashboard/chat', chat.id]);
+      });
   }
 }

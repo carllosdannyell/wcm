@@ -3,12 +3,12 @@
     <div
       *ngFor="let msg of messages"
       [ngClass]="{
-          mine: msg.senderId === currentUserId,
-          theirs: msg.senderId !== currentUserId
-        }"
+        mine: msg.senderId === currentUserId,
+        theirs: msg.senderId !== currentUserId
+      }"
     >
       <span class="content">{{ msg.content }}</span>
-      <small class="time">{{ msg.sentAt | date: 'shortTime' }}</small>
+      <small class="time">{{ msg.sentAt | date : "shortTime" }}</small>
     </div>
   </div>
 

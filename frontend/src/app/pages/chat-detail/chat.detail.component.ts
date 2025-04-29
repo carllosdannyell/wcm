@@ -7,8 +7,8 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 @Component({
   selector: 'app-chat-detail',
   standalone: true,
-  templateUrl: './chat-detail.component.html',
-  styleUrls: ['./chat-detail.component.css'],
+  templateUrl: './chat.detail.component.html',
+  styleUrls: ['./chat.detail.component.css'],
   imports: [CommonModule, ReactiveFormsModule, FormsModule],
 })
 export class ChatDetailComponent implements OnInit {

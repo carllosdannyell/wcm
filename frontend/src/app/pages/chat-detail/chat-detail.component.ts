@@ -1,10 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ChatService, Message } from './chat-detail.service';
+import { ChatDetailService, Message } from './chat-detail.service';
 import { jwtDecode } from 'jwt-decode';
 import { User } from '../chat/chat.service';
+import { io, Socket } from 'socket.io-client';
 
 interface JwtPayload {
   userId: number;
@@ -17,7 +18,8 @@ interface JwtPayload {
   templateUrl: './chat-detail.component.html',
   styleUrls: ['./chat-detail.component.css'],
 })
-export class ChatDetailComponent implements OnInit {
+export class ChatDetailComponent implements OnInit, OnDestroy {
+  socket!: Socket;
   users: User[] = [];
   messages: Message[] = [];
   chatPartner?: User;
@@ -27,7 +29,7 @@ export class ChatDetailComponent implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
-    private chatService: ChatService
+    private chatDetailService: ChatDetailService
   ) {}
 
   ngOnInit() {
@@ -37,36 +39,53 @@ export class ChatDetailComponent implements OnInit {
       return;
     }
 
-    this.chatId = +this.route.snapshot.paramMap.get('id')!;
+    this.socket = io('http://localhost:3000', {
+      transports: ['websocket'],
+    });
 
-    this.chatService.getUsers().subscribe({
+    
+
+    this.chatId = +this.route.snapshot.paramMap.get('id')!;
+    this.loadUsers();
+    this.loadMessages();
+
+    this.socket.on('new-message', (message) => {
+      this.messages.push(message)
+    })
+  }
+
+  loadUsers() {
+    this.chatDetailService.getUsers().subscribe({
       next: (list) => {
         this.chatPartner = list.filter((u) => u.id !== this.currentUserId)[0];
       },
       error: (err) => console.error('Erro ao buscar usuários:', err),
     });
+  }
 
-    this.chatService.getMessages(this.chatId).subscribe({
-      next: (msgs) => {
-        this.messages = msgs;
-        this.identifyPartner();
-      },
-      error: (err) => console.error('Erro ao buscar mensagens:', err),
+  loadMessages() {
+    this.chatDetailService.getMessages(this.chatId).subscribe((data) => {
+      this.messages = data;
     });
   }
 
   sendMessage() {
     const content = this.newMessage.trim();
     if (!content) return;
-    this.chatService
+    this.chatDetailService
       .sendMessage(this.chatId, this.currentUserId, content)
       .subscribe((msg) => {
-        this.messages.push(msg);
+        this.loadMessages();
         this.newMessage = '';
+        this.socket.emit('new-message', msg);
       });
 
     console.log(this.chatPartner);
     console.log(this.messages);
+  }
+
+  ngOnDestroy(): void {
+    console.log('aslçkcmask');
   }
 
   private identifyPartner() {
@@ -81,10 +100,8 @@ export class ChatDetailComponent implements OnInit {
     );
 
     if (otherIds.length === 1) {
-      // usuário único no chat: definimos o interlocutor
       this.chatPartner = this.users.find((u) => u.id === otherIds[0]);
     } else {
-      // fallback: sem outro, usamos o próprio usuário atual
       this.chatPartner = this.users.find((u) => u.id === this.currentUserId);
     }
   }

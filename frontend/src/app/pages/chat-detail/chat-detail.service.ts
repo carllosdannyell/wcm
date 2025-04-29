@@ -23,7 +23,7 @@ export interface Message {
 }
 
 @Injectable({ providedIn: 'root' })
-export class ChatService {
+export class ChatDetailService {
   private apiUrl = 'http://localhost:3000';
 
   constructor(private http: HttpClient) {}

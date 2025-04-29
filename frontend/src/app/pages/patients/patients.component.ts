@@ -70,7 +70,7 @@ export class PatientsComponent implements OnInit, OnDestroy {
       transports: ['websocket'],
     });
 
-    this.socket.on('field-locked', ({ field, user, context }) => {
+    this.socket.on('send-message', ({ field, user, context }) => {
       if (user !== this.currentUser) {
         this.fieldLocks[field][context] = user;
       }

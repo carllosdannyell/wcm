@@ -4,12 +4,14 @@ import { FindManyOptions, IsNull, Not, Repository } from 'typeorm';
 import { Message } from './entities/message.entity';
 import { CreateMessageDto } from './dto/create-message.dto';
 import { UpdateMessageDto } from './dto/update-message.dto';
+import { MessageGateway } from 'src/gateway/message.gateway';
 
 @Injectable()
 export class MessagesService {
   constructor(
     @InjectRepository(Message)
     private readonly messagesRepository: Repository<Message>,
+    private readonly messageGateway: MessageGateway,
   ) {}
 
   async create(createMessageDto: CreateMessageDto): Promise<Message> {
@@ -58,5 +60,6 @@ export class MessagesService {
 
   async remove(id: number): Promise<void> {
     await this.messagesRepository.delete(id);
+    this.messageGateway.server.emit('message-deleted', { id });
   }
 }

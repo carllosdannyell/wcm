@@ -2,7 +2,12 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { User } from '../chat/chat.service';
+
+export interface User {
+  id: number;
+  name: string;
+  email: string;
+}
 
 export interface Message {
   id: number;

@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { PatientsGateway } from './gateway.gateway';
+import { PatientsGateway } from './patient.gateway';
 
 @Module({
   providers: [PatientsGateway],

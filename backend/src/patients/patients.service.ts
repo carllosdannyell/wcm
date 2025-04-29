@@ -4,7 +4,7 @@ import { Repository } from 'typeorm';
 import { Patient } from './entities/patient.entity';
 import { CreatePatientDto } from './dto/create-patient.dto';
 import { UpdatePatientDto } from './dto/update-patient.dto';
-import { PatientsGateway } from '../gateway/gateway.gateway'; //
+import { PatientsGateway } from '../gateway/patient.gateway'; //
 
 @Injectable()
 export class PatientsService {

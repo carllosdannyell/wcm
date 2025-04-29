@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ChatService, Message } from './chat.service';
+import { ChatService, Message } from './chat-detail.service';
 import { jwtDecode } from 'jwt-decode';
 import { User } from '../chat/chat.service';
 

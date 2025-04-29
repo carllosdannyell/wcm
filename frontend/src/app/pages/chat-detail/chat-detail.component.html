@@ -1,9 +1,7 @@
 <div class="chat-detail">
   <!-- cabeçalho mostrando com quem você está conversando -->
   <div class="chat-header" *ngIf="chatPartner">
-    <span class="back-button" routerLink="/chats">←</span>
     <div class="partner-info">
-      <div class="avatar">{{ chatPartner.id }}</div>
       <h2 class="partner-name">{{ chatPartner.name }}</h2>
     </div>
   </div>

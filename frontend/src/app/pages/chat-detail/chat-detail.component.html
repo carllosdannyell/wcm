@@ -1,0 +1,43 @@
+<div class="chat-detail">
+  <!-- cabeçalho mostrando com quem você está conversando -->
+  <div class="chat-header" *ngIf="chatPartner">
+    <span class="back-button" routerLink="/chats">←</span>
+    <div class="partner-info">
+      <div class="avatar">{{ chatPartner.id }}</div>
+      <h2 class="partner-name">{{ chatPartner.name }}</h2>
+    </div>
+  </div>
+
+  <div class="messages">
+    <div
+      *ngFor="let msg of messages"
+      class="message"
+      [ngClass]="{
+        mine: msg.senderId === currentUserId,
+        theirs: msg.senderId !== currentUserId
+      }"
+    >
+      <div class="avatar" *ngIf="msg.senderId !== currentUserId">
+        {{ msg.senderId }}
+      </div>
+
+      <div class="bubble">
+        <div class="text">{{ msg.content }}</div>
+        <div class="meta">
+          <span class="time">{{ msg.sentAt | date : "HH:mm" }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="input-bar">
+    <input
+      type="text"
+      [(ngModel)]="newMessage"
+      placeholder="Digite sua mensagem…"
+    />
+    <button (click)="sendMessage()" [disabled]="!newMessage.trim()">
+      Enviar
+    </button>
+  </div>
+</div>

@@ -2,6 +2,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { User } from '../chat/chat.service';
 
 export interface Message {
   id: number;
@@ -18,11 +19,14 @@ export class ChatService {
 
   constructor(private http: HttpClient) {}
 
-  // ... getUsers(), createChat(), addChatUser() já existentes
-
   /** Busca todas as mensagens de um chat */
   getMessages(chatId: number): Observable<Message[]> {
     return this.http.get<Message[]>(`${this.apiUrl}/messages?chatId=${chatId}`);
+  }
+
+  /** 1) Lista todos os usuários */
+  getUsers(): Observable<User[]> {
+    return this.http.get<User[]>(`${this.apiUrl}/users`);
   }
 
   /** Envia uma mensagem num chat */
@@ -31,9 +35,10 @@ export class ChatService {
     senderId: number,
     content: string
   ): Observable<Message> {
+    // keys batem agora com CreateMessageDto no Nest
     return this.http.post<Message>(`${this.apiUrl}/messages`, {
-      chatId,
-      senderId,
+      chat: chatId,
+      sender: senderId,
       content,
     });
   }

@@ -1,3 +1,4 @@
+// src/app/chat/chat.service.ts
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, forkJoin, of } from 'rxjs';
@@ -7,15 +8,6 @@ export interface User {
   id: number;
   name: string;
   email: string;
-}
-
-export interface Message {
-  id: number;
-  chatId: number;
-  senderId: number;
-  content: string;
-  sentAt: string;
-  isRead: boolean;
 }
 
 export interface Chat {
@@ -30,23 +22,32 @@ export interface ChatUser {
   joinedAt: string;
 }
 
+export interface Message {
+  id: number;
+  chatId: number;
+  senderId: number;
+  content: string;
+  sentAt: string;
+  isRead: boolean;
+}
+
 @Injectable({ providedIn: 'root' })
 export class ChatService {
-  private apiUrl = 'http://localhost:3000'; // ajuste para seu backend
+  private apiUrl = 'http://localhost:3000';
 
   constructor(private http: HttpClient) {}
 
-  // 1) Lista de usuários
+  /** 1) Lista todos os usuários */
   getUsers(): Observable<User[]> {
     return this.http.get<User[]>(`${this.apiUrl}/users`);
   }
 
-  // 2) Cria um chat "em branco"
+  /** 2) Cria um chat vazio */
   createChat(): Observable<Chat> {
     return this.http.post<Chat>(`${this.apiUrl}/chats`, {});
   }
 
-  // 3) Associa um usuário a um chat
+  /** 3) Associa usuário ao chat */
   addChatUser(chatId: number, userId: number): Observable<ChatUser> {
     return this.http.post<ChatUser>(`${this.apiUrl}/chat-users`, {
       chatId,
@@ -54,58 +55,44 @@ export class ChatService {
     });
   }
 
-  /** Busca todos os chat-users e filtra pelos que pertençam ao userId */
-  getChatUsersForUser(userId: number): Observable<ChatUser[]> {
+  /** 4) Retorna todos os ChatUser de um usuário */
+  private getChatUsersForUser(userId: number): Observable<ChatUser[]> {
     return this.http
       .get<ChatUser[]>(`${this.apiUrl}/chat-users`)
       .pipe(map((list) => list.filter((cu) => cu.userId === userId)));
   }
 
-  chatUserExists(chatId: number, userId: number): Observable<boolean> {
-    return this.http
-      .get<ChatUser>(`${this.apiUrl}/chat-users/chats/${chatId}/users/${userId}`)
-      .pipe(
-        map(() => true),
-        // se o 404 vier, retorna false em vez de erro
-        // (você pode capturar com catchError, mas este é um exemplo simples)
-      );
-  }
-
-  // checa se já existe chat compartilhado entre dois usuários
-  checkChatExists(userA: number, userB: number): Observable<Chat | null> {
+  /** 5) Checa se já existe chat 1-a-1 entre dois usuários */
+  private checkChatExists(a: number, b: number): Observable<Chat | null> {
     return forkJoin([
-      this.getChatUsersForUser(userA),
-      this.getChatUsersForUser(userB),
+      this.getChatUsersForUser(a),
+      this.getChatUsersForUser(b),
     ]).pipe(
-      map(([listA, listB]) => {
-        const idsA = listA.map((cu) => cu.chatId);
-        const idsB = listB.map((cu) => cu.chatId);
-        return idsA.find((id) => idsB.includes(id)) ?? null;
-      }),
-      switchMap((chatId) => {
-        if (chatId) {
-          return this.http.get<Chat>(`${this.apiUrl}/chats/${chatId}`);
-        }
-        return of(null);
-      })
+      map(
+        ([la, lb]) =>
+          la
+            .map((cu) => cu.chatId)
+            .find((id) => lb.some((cu) => cu.chatId === id)) ?? null
+      ),
+      switchMap((chatId) =>
+        chatId
+          ? this.http.get<Chat>(`${this.apiUrl}/chats/${chatId}`)
+          : of(null)
+      )
     );
   }
 
-  /**
-   * ou cria um novo chat+vínculos, ou retorna o existente
-   */
-  getOrCreateChat(userA: number, userB: number): Observable<Chat> {
-    return this.checkChatExists(userA, userB).pipe(
+  /** 6) Pega o chat existente ou cria um novo (e associa ambos) */
+  getOrCreateChat(a: number, b: number): Observable<Chat> {
+    return this.checkChatExists(a, b).pipe(
       switchMap((chat) => {
-        if (chat) {
-          return of(chat);
-        }
+        if (chat) return of(chat);
         return this.createChat().pipe(
           switchMap((newChat) =>
             forkJoin([
               of(newChat),
-              this.addChatUser(newChat.id, userA),
-              this.addChatUser(newChat.id, userB),
+              this.addChatUser(newChat.id, a),
+              this.addChatUser(newChat.id, b),
             ]).pipe(map(([c]) => c))
           )
         );
@@ -113,10 +100,12 @@ export class ChatService {
     );
   }
 
+  /** 7) Busca mensagens de um chat */
   getMessages(chatId: number): Observable<Message[]> {
     return this.http.get<Message[]>(`${this.apiUrl}/messages?chatId=${chatId}`);
   }
 
+  /** 8) Envia uma nova mensagem */
   sendMessage(
     chatId: number,
     senderId: number,

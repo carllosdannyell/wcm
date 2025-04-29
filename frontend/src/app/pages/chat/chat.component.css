@@ -2,33 +2,20 @@
     max-width: 400px;
     margin: 0 auto;
     padding: 1rem;
-}
-
-.users-list ul {
+  }
+  .users-list ul {
     list-style: none;
     padding: 0;
-}
-
-.users-list li {
+  }
+  .users-list li {
     padding: 0.75rem;
     margin-bottom: 0.5rem;
     border: 1px solid #ddd;
     border-radius: 4px;
     cursor: pointer;
     transition: background 0.2s;
-}
-
-.users-list li:hover {
-    background: #f5f5f5;
-}
-
-.users-list li.loading {
-    opacity: 0.6;
-    pointer-events: none;
-}
-
-.spinner {
-    text-align: center;
-    margin-top: 1rem;
-    font-style: italic;
-}
+  }
+  .users-list li:hover { background: #f5f5f5; }
+  .users-list li.loading { opacity: 0.6; pointer-events: none; }
+  .spinner { text-align: center; margin-top: 1rem; font-style: italic; }
+  

@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Query, // ← importe Query
 } from '@nestjs/common';
 import { CreateMessageDto } from './dto/create-message.dto';
 import { UpdateMessageDto } from './dto/update-message.dto';
@@ -21,7 +22,10 @@ export class MessagesController {
   }
 
   @Get()
-  findAll() {
+  findAll(@Query('chatId') chatId?: string) {
+    if (chatId) {
+      return this.messagesService.findAll(+chatId);
+    }
     return this.messagesService.findAll();
   }
 

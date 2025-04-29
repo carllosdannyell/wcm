@@ -7,7 +7,7 @@ import { ProfileComponent } from './pages/profile/profile.component';
 import { PatientsComponent } from './pages/patients/patients.component';
 import { AppComponent } from './app.component';
 import { ChatComponent } from './pages/chat/chat.component';
-import { ChatDetailComponent } from './pages/chat-detail/chat.detail.component';
+import { ChatDetailComponent } from './pages/chat-detail/chat-detail.component';
 
 export const routes: Routes = [
   { path: '', component: AppComponent }, // Componente vazio ou de carregamento

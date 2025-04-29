@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { FindManyOptions, IsNull, Not, Repository } from 'typeorm';
 import { Message } from './entities/message.entity';
 import { CreateMessageDto } from './dto/create-message.dto';
 import { UpdateMessageDto } from './dto/update-message.dto';
@@ -18,11 +18,21 @@ export class MessagesService {
     return saved;
   }
 
-  async findAll(): Promise<Message[]> {
-    return this.messagesRepository.find({
+  async findAll(chatId?: number): Promise<Message[]> {
+    const options: FindManyOptions<Message> = {
       relations: ['chat', 'sender'],
       order: { sentAt: 'ASC' },
-    });
+    };
+
+    if (chatId !== undefined) {
+      options.where = { chat: { id: chatId } };
+    }
+
+    if (chatId === undefined) {
+      options.where = { chat: { id: Not(IsNull()) } };
+    }
+
+    return this.messagesRepository.find(options);
   }
 
   async findOne(id: number): Promise<Message> {

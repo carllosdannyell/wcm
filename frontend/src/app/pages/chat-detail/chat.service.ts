@@ -6,8 +6,12 @@ import { User } from '../chat/chat.service';
 
 export interface Message {
   id: number;
-  chatId: number;
-  senderId: number;
+  chat: {
+    id: number;
+  };
+  sender: {
+    id: number;
+  };
   content: string;
   sentAt: string;
   isRead: boolean;

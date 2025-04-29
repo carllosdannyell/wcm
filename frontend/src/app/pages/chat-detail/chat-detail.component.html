@@ -13,14 +13,10 @@
       *ngFor="let msg of messages"
       class="message"
       [ngClass]="{
-        mine: msg.senderId === currentUserId,
-        theirs: msg.senderId !== currentUserId
+        mine: msg.sender.id === currentUserId,
+        theirs: msg.sender.id !== currentUserId
       }"
     >
-      <div class="avatar" *ngIf="msg.senderId !== currentUserId">
-        {{ msg.senderId }}
-      </div>
-
       <div class="bubble">
         <div class="text">{{ msg.content }}</div>
         <div class="meta">

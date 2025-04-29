@@ -39,13 +39,11 @@ export class ChatDetailComponent implements OnInit {
 
     this.chatId = +this.route.snapshot.paramMap.get('id')!;
 
-    // carrega usuários e mensagens em paralelo
     this.chatService.getUsers().subscribe({
       next: (list) => {
-        this.users = list;
-        this.identifyPartner();
+        this.chatPartner = list.filter((u) => u.id !== this.currentUserId)[0];
       },
-      error: (err) => console.error(err),
+      error: (err) => console.error('Erro ao buscar usuários:', err),
     });
 
     this.chatService.getMessages(this.chatId).subscribe({
@@ -53,7 +51,7 @@ export class ChatDetailComponent implements OnInit {
         this.messages = msgs;
         this.identifyPartner();
       },
-      error: (err) => console.error(err),
+      error: (err) => console.error('Erro ao buscar mensagens:', err),
     });
   }
 
@@ -66,26 +64,29 @@ export class ChatDetailComponent implements OnInit {
         this.messages.push(msg);
         this.newMessage = '';
       });
+
+    console.log(this.chatPartner);
+    console.log(this.messages);
   }
 
   private identifyPartner() {
-    // só tenta identificar se já temos usuários e mensagens
     if (!this.users.length || !this.messages.length) return;
 
-    // acha todos os senderIds diferentes de currentUserId
     const otherIds = Array.from(
       new Set(
         this.messages
-          .map((m) => m.senderId)
+          .map((m) => m.sender.id)
           .filter((id) => id !== this.currentUserId)
       )
     );
 
-    // no chat 1:1 teremos exatamente 1 interlocutor
     if (otherIds.length === 1) {
+      // usuário único no chat: definimos o interlocutor
       this.chatPartner = this.users.find((u) => u.id === otherIds[0]);
+    } else {
+      // fallback: sem outro, usamos o próprio usuário atual
+      this.chatPartner = this.users.find((u) => u.id === this.currentUserId);
     }
-    // se for grupo, você pode adaptar aqui para múltiplos
   }
 
   private getCurrentUserId(): number {
